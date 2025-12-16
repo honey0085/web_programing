@@ -1,4 +1,3 @@
-<!-- ...existing code... -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -19,19 +18,11 @@
       user-select: none;
     }
 
-    .container {
-      text-align: center;
-    }
+    .container { text-align: center; }
 
-    h1 {
-      font-size: 2em;
-      margin-bottom: 1rem;
-    }
+    h1 { font-size: 2em; margin-bottom: 1rem; }
 
-    p {
-      font-size: 1.2em;
-      margin-bottom: 1rem;
-    }
+    p { font-size: 1.2em; margin-bottom: 1rem; }
 
     button {
       background-color: #3b82f6;
@@ -44,15 +35,12 @@
       transition: 0.2s;
     }
 
-    button:hover {
-      background-color: #2563eb;
-    }
+    button:hover { background-color: #2563eb; }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>⚡ 반응속도 테스트</h1>
@@ -73,25 +61,21 @@
     bestRecord = bestRecord ? parseInt(bestRecord, 10) : null;
 
     const reset = () => {
-      clearTimeout(timeout);
-      timeout = null;
-      startTime = null;
-      currentTrial = 1;
-      results = [];
       document.body.style.backgroundColor = '#222';
       text.textContent = '"시작하기" 버튼을 눌러주세요!';
       button.textContent = '시작하기';
       button.classList.remove('hidden');
     };
 
-    const startGame = (e) => {
-      if (e && e.stopPropagation) e.stopPropagation();
+    const startGame = () => {
       button.classList.add('hidden');
       text.textContent = `(${currentTrial}/${totalTrials}) 곧 색이 바뀝니다... 준비하세요!`;
+
       document.body.style.backgroundColor = '#b91c1c'; // 빨강
       startTime = null;
 
-      const delay = 2000 + Math.random() * 3000; // 2~5초 랜덤
+      const delay = 2000 + Math.random() * 3000;
+
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         document.body.style.backgroundColor = '#16a34a'; // 초록
@@ -101,44 +85,40 @@
     };
 
     const finishSession = () => {
-      // 평균 계산(유효한 측정만)
       if (results.length === 0) {
         text.innerHTML = `측정된 기록이 없습니다.<br>다시 시도해 주세요.`;
       } else {
-        const sum = results.reduce((a, b) => a + b, 0);
-        const avg = Math.round(sum / results.length);
+        const avg = Math.round(results.reduce((a, b) => a + b) / results.length);
         text.innerHTML = `
           평균 반응속도: <b>${avg}ms</b><br>
           개별 기록: ${results.map(r => r + 'ms').join(' / ')}<br>
           최고기록: ${bestRecord !== null ? bestRecord + 'ms' : '없음'}
         `;
       }
-      document.body.style.backgroundColor = '#222';
+
       button.textContent = '다시하기';
       button.classList.remove('hidden');
+
+      // 초기화
       startTime = null;
       timeout = null;
       currentTrial = 1;
       results = [];
+      document.body.style.backgroundColor = '#222';
     };
 
-    const handleClick = (e) => {
-      // 버튼 보이는 상태(세션 전 또는 완료)에는 본문 클릭 무시
+    const handleClick = () => {
       if (!button.classList.contains('hidden')) return;
 
       if (!startTime) {
-        // 아직 색 안 바뀌었을 때 클릭 (미리 누름) -> 같은 라운드 재시도
+        // 조급 클릭
         clearTimeout(timeout);
-        timeout = null;
         text.textContent = `너무 빨랐어요! 같은 라운드를 다시 시도합니다. (${currentTrial}/${totalTrials})`;
         document.body.style.backgroundColor = '#222';
-        startTime = null;
-        // 잠시 보여준 뒤 동일 라운드로 재시작
-        setTimeout(() => {
-          startGame();
-        }, 1000);
+
+        setTimeout(() => startGame(), 800);
       } else {
-        // 정상 클릭
+        // 정상 클릭 기록
         const reaction = Date.now() - startTime;
         results.push(reaction);
 
@@ -147,44 +127,35 @@
           localStorage.setItem('bestRecord', reaction);
         }
 
-        // 표시
         text.innerHTML = `(${currentTrial}/${totalTrials}) 기록: <b>${reaction}ms</b>`;
         document.body.style.backgroundColor = '#222';
-        startTime = null;
+
         clearTimeout(timeout);
-        timeout = null;
+        startTime = null;
 
         if (currentTrial < totalTrials) {
           currentTrial++;
-          // 다음 라운드 자동 시작 (잠깐 결과를 보여주고)
-          setTimeout(() => {
-            startGame();
-          }, 1000);
+          setTimeout(() => startGame(), 800);
         } else {
-          // 모든 라운드 완료 후 평균 표시
-          setTimeout(() => {
-            finishSession();
-          }, 800);
+          setTimeout(() => finishSession(), 700);
         }
       }
     };
 
-    // 이벤트 등록
-    button.addEventListener('click', (e) => {
-      // 시작 버튼 누르면 세션 초기화하고 시작
+    // 이벤트
+    button.addEventListener('click', () => {
       results = [];
       currentTrial = 1;
-      startGame(e);
+      startGame();
     });
+
     document.body.addEventListener('click', handleClick);
 
-    // 키보드(스페이스)로도 조작 가능하게 함
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
         if (button.classList.contains('hidden')) handleClick();
         else {
-          // 버튼 보이는 상태면 시작(세션 초기화)
           results = [];
           currentTrial = 1;
           startGame();
@@ -192,9 +163,8 @@
       }
     });
 
-    // 초기 상태 설정
+    // 초기 상태
     reset();
   </script>
 </body>
 </html>
-<!-- ...existing code... -->
